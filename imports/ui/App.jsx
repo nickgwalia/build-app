@@ -165,15 +165,16 @@ class App extends Component {
       <div className="container">
         <div className="row justify-content-md-center">
           <div className="col-md-8" style={{margin: '40px 0'}}>
-            <h2 style={{marginBottom: '25px'}}>Arcade City Builders</h2>
-            <p>Current payment per referral: {bountyInEth} {bountyUsdValue ? `(~$${bountyUsdValue})` : ''}</p>
-            <p><a href={`https://etherscan.io/address/${bountyWalletAddress}`} target="_blank">Bounty wallet on Etherscan</a> &mdash <i>You can check to see if we've run out of ether yet!</i></p>
-            <p><a href="http://arcade.city/" target="_blank">Arcade City Homepage</a></p>
-            <hr />
+            <div className="row">
+              <div className="col-md-6">
+                <h2>Build Arcade City</h2>
+              </div>
+              <div className="col-md-6" style={{marginTop: '5px'}}>
+                <AccountsUIWrapper/>
+              </div>
+            </div>
 
             <div>
-              <AccountsUIWrapper/>
-
               {!currentUser ? <IntroExplainer/> : (
                 <div>
                   {
@@ -182,7 +183,7 @@ class App extends Component {
                     (referrals && referrals.referredBy) ? null :
                       <div>
                         <hr />
-                        <p>Were you referred by another user? Enter their referral code here:</p>
+                        <p>Enter referral code:</p>
                         <form className="new-task" onSubmit={this.handleSubmitCode.bind(this)} >
                           <input
                             type="text"
@@ -194,43 +195,6 @@ class App extends Component {
                       </div>
                   }
 
-                  <hr />
-                  <p>
-                    {ethAddress ?
-                      `Your ethereum address: ${ethAddress}. You may replace this with a new address below.` :
-                      'You must set your ethereum address below in order to refer another user and claim a reward.'}
-                    <br /><br />
-                    <strong>{ethBalanceFormatted ? `Balance: ${ethBalanceFormatted} (~$${ethUsdValue})`  : ``}</strong>
-                  </p>
-
-                  {
-                    // Let all users update their eth address (from metamask)
-                    // at any time.
-                  }
-                  <button className="btn btn-primary" onClick={this.readWeb3WalletAddress.bind(this)}>Read eth address</button>
-                  <div style={{fontSize: 'small'}}>Please reload page after logging in or switching accounts in Metamask.</div>
-                  <hr />
-
-                  {
-                    // Show referral code and referrals if a user has entered their eth address
-                    ethAddress && referrals && referrals.code && referrals.referredBy ?
-                      <div>
-                        <p>Your referral code: {referrals.code}</p>
-                        <hr />
-                        <p>Your referrals:</p>
-                        <ul>
-                          {referred.map((r, n) =>
-                            <li key={n}>{r.name || `Unknown (${r.userId})`} referred at {r.createdAt.toLocaleString()}</li>
-                          )}
-                        </ul>
-                      </div>
-                      :
-                      <p>
-                        Please enter the referral code of the user that referred
-                        you, and set your ethereum address, in order to see your
-                        own referral code.
-                      </p>
-                  }
                 </div>
               )}
             </div>
