@@ -4,9 +4,11 @@ import PropTypes from 'prop-types'
 import { Meteor } from 'meteor/meteor'
 import Web3 from 'web3'
 import { withTracker } from 'meteor/react-meteor-data'
-
 import { TOKEN_ABI, TOKEN_ADDRESS, CROWDSALE_ADDRESS, isAddress,
   getEthUsd, fetchAddressBalance, grabTransactionsForAddress, grabTokenInfo } from '../misc/ethtools'
+import AccountsUIWrapper from './AccountsUIWrapper.jsx'
+import IntroExplainer from './IntroExplainer.jsx'
+import { Referrals } from '../api/referrals'
 import settings from '../../settings.json'
 
 let abi = require('human-standard-token-abi')
@@ -37,6 +39,40 @@ class App extends Component {
     }
   }
 
+  async handleSubmitCode(event) {
+    event.preventDefault()
+
+    // Find the text field via the React ref
+    const text = ReactDOM.findDOMNode(this.refs.textInputCode).value.trim()
+
+    try {
+      await Meteor.callPromise('referrals.referralClaimed', text)
+      console.log('Successfully processed referral code.')
+    } catch (error) {
+      console.error('Error claiming referral code:', error)
+      alert('Error finding this referral code, are you sure it\'s valid?')
+
+      // Clear form (no need to do this if it succeeds since the form will
+      // disappear).
+      ReactDOM.findDOMNode(this.refs.textInputCode).value = ''
+    }
+  }
+
+  async setEthAddress(address) {
+    if (!isAddress(address)) {
+      alert('Invalid ethereum address.')
+      return false
+    }
+
+    try {
+      await Meteor.callPromise('users.setEthAddress', address)
+    } catch (error) {
+      console.error('Error setting eth address:', error)
+      alert('An error occurred setting your eth address.')
+    }
+  }
+
+
   async fromWei (value) {
     const localWeb3 = new Web3(window.web3.currentProvider)
     return localWeb3.eth.fromWei(value)
@@ -47,35 +83,37 @@ class App extends Component {
     try {
       const
         ethAddress = Meteor.user() && Meteor.user().ethereum && Meteor.user().ethereum.address,
-        ethBalance = (ethAddress && await fetchAddressBalance(ethAddress)) || 0;
-      console.log("Got ethBalance:", ethBalance);
-      this.setState({ethBalance});
+        ethBalance = (ethAddress && await fetchAddressBalance(ethAddress)) || 0
+      console.log("Got ethBalance:", ethBalance)
+      this.setState({ethBalance})
     } catch (error) {
-      console.error('Error fetching ethBalance:', error);
+      console.error('Error fetching ethBalance:', error)
     }
   }
 
   async readWeb3WalletAddress() {
     if (!(window.web3 && window.web3.currentProvider)) {
-      console.error('web3 not detected');
-      return alert('Error connecting to Metamask, is it installed?');
+      console.error('web3 not detected')
+      return alert('Error connecting to Metamask, is it installed?')
     }
 
-    const localWeb3 = new Web3(window.web3.currentProvider);
+    const localWeb3 = new Web3(window.web3.currentProvider)
 
     if (!(localWeb3.eth && localWeb3.eth.accounts.length && localWeb3.eth.accounts[0])) {
-      console.error('web3 detected but web3.eth.defaultAccount is missing');
-      return alert('Unable to read wallet address. Please login to Metamask then reload page.');
+      console.error('web3 detected but web3.eth.defaultAccount is missing')
+      return alert('Unable to read wallet address. Please login to Metamask then reload page.')
     }
 
-    const account = localWeb3.eth.accounts[0];
-    console.log('Detected wallet address from web3:', account);
-    return account;
+    const account = localWeb3.eth.accounts[0]
+    console.log('Detected wallet address from web3:', account)
+    return account
   }
 
   render() {
     console.log('State: ', this.state)
     console.log('Props: ', this.props)
+    console.log('Current user is:', this.props.currentUser)
+    console.log('Referred is:', this.props.referred)
 
     // Must already be running inside an ETH browser such as Metamask.
     if (typeof web3 === 'undefined') {
@@ -95,7 +133,32 @@ class App extends Component {
             </div>
           </div>
         </div>
-      );
+      )
+    }
+
+
+    const currentUser = this.props.currentUser,
+      ethPrice = this.state && this.state.ethPrice || 0,
+      ethBalance = this.state && this.state.ethBalance || 0,
+      bountyInEth = EthTools.formatBalance(settings.reward.wei, '0,0.0[00] unit'),
+      ethNetwork = settings.eth.network,
+      bountyWalletAddress = settings.eth[ethNetwork].walletPubkey
+    let ethAddress, referrals, referred, ethUsdValue, ethBalanceFormatted, bountyUsdValue
+
+    if (ethPrice) {
+      bountyUsdValue = (parseFloat(ethPrice) * parseFloat(EthTools.formatBalance(settings.reward.wei))).toFixed(2)
+      console.log('bounty usd value:', bountyUsdValue)
+    }
+
+    if (currentUser) {
+      ethAddress = currentUser && currentUser.ethereum && currentUser.ethereum.address
+      ethBalanceFormatted = EthTools.formatBalance(ethBalance, '0,0.0[00] unit')
+      if (ethBalance && ethPrice)
+        ethUsdValue = (parseFloat(ethPrice) * parseFloat(EthTools.formatBalance(ethBalance))).toFixed(2)
+      else
+        ethUsdValue = '...'
+      referrals = currentUser.referrals
+      referred = this.props.referred && this.props.referred.referred || []
     }
 
     return (
@@ -103,21 +166,95 @@ class App extends Component {
         <div className="row justify-content-md-center">
           <div className="col-md-8" style={{margin: '40px 0'}}>
             <h2 style={{marginBottom: '25px'}}>Arcade City Builders</h2>
-            <p>Log in</p>
+            <p>Current payment per referral: {bountyInEth} {bountyUsdValue ? `(~$${bountyUsdValue})` : ''}</p>
+            <p><a href={`https://etherscan.io/address/${bountyWalletAddress}`} target="_blank">Bounty wallet on Etherscan</a> &mdash <i>You can check to see if we've run out of ether yet!</i></p>
+            <p><a href="http://arcade.city/" target="_blank">Arcade City Homepage</a></p>
+            <hr />
+
+            <div>
+              <AccountsUIWrapper/>
+
+              {!currentUser ? <IntroExplainer/> : (
+                <div>
+                  {
+                    // Only show the "enter referral code" form to users who haven't
+                    // already entered one.
+                    (referrals && referrals.referredBy) ? null :
+                      <div>
+                        <hr />
+                        <p>Were you referred by another user? Enter their referral code here:</p>
+                        <form className="new-task" onSubmit={this.handleSubmitCode.bind(this)} >
+                          <input
+                            type="text"
+                            ref="textInputCode"
+                            className="form-control mp-refinput"
+                            placeholder="Enter referral code and press enter."
+                          />
+                        </form>
+                      </div>
+                  }
+
+                  <hr />
+                  <p>
+                    {ethAddress ?
+                      `Your ethereum address: ${ethAddress}. You may replace this with a new address below.` :
+                      'You must set your ethereum address below in order to refer another user and claim a reward.'}
+                    <br /><br />
+                    <strong>{ethBalanceFormatted ? `Balance: ${ethBalanceFormatted} (~$${ethUsdValue})`  : ``}</strong>
+                  </p>
+
+                  {
+                    // Let all users update their eth address (from metamask)
+                    // at any time.
+                  }
+                  <button className="btn btn-primary" onClick={this.readWeb3WalletAddress.bind(this)}>Read eth address</button>
+                  <div style={{fontSize: 'small'}}>Please reload page after logging in or switching accounts in Metamask.</div>
+                  <hr />
+
+                  {
+                    // Show referral code and referrals if a user has entered their eth address
+                    ethAddress && referrals && referrals.code && referrals.referredBy ?
+                      <div>
+                        <p>Your referral code: {referrals.code}</p>
+                        <hr />
+                        <p>Your referrals:</p>
+                        <ul>
+                          {referred.map((r, n) =>
+                            <li key={n}>{r.name || `Unknown (${r.userId})`} referred at {r.createdAt.toLocaleString()}</li>
+                          )}
+                        </ul>
+                      </div>
+                      :
+                      <p>
+                        Please enter the referral code of the user that referred
+                        you, and set your ethereum address, in order to see your
+                        own referral code.
+                      </p>
+                  }
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     )
+
   }
 }
 
-export default withTracker(props => {
-  // Meteor.subscribe('transactions')
-  //
-  // return {
-  //   txs: Transactions.find().fetch(),
-  // }
-  return {
+App.propTypes = {
+  currentUser: PropTypes.object,
+  referred: PropTypes.object,
+}
 
+export default withTracker(props => {
+  // Get extended user data from the server
+  Meteor.subscribe('userData')
+  Meteor.subscribe('referrals')
+
+  // User, and data tied to user balance, change hence they live in props not state
+  return {
+    currentUser: Meteor.user(),
+    referred: Referrals.findOne({userId: Meteor.userId()})
   }
 })(App)

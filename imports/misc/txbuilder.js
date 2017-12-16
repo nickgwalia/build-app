@@ -1,7 +1,7 @@
 // Based on https://github.com/TokenMarketNet/ethereum-smart-contract-transaction-demo/
 
-import { Wallet } from "ethers";
-import { simpleEncode } from "ethereumjs-abi";
+import { Wallet } from 'ethers'
+import { simpleEncode } from 'ethereumjs-abi'
 
 /**
  * Get an Ethereum public address from a private key.
@@ -12,11 +12,11 @@ import { simpleEncode } from "ethereumjs-abi";
  */
 export function getAddressFromPrivateKey(privateKey) {
   try {
-    let wallet = new Wallet(privateKey);
-    return wallet.address;
+    let wallet = new Wallet(privateKey)
+    return wallet.address
   } catch (e) {
-    console.error("Could not parse private key ", privateKey, e);
-    return null;
+    console.error('Could not parse private key ', privateKey, e)
+    return null
   }
 }
 
@@ -28,7 +28,7 @@ export function getAddressFromPrivateKey(privateKey) {
  * @param internalOffset Always increase +1 when sends a tx
  */
 export function calculateNonce(txCount, testnetOffset, internalOffset) {
-  return txCount + testnetOffset + internalOffset;
+  return txCount + testnetOffset + internalOffset
 }
 
 
@@ -41,19 +41,19 @@ export function calculateNonce(txCount, testnetOffset, internalOffset) {
  */
 export function encodeDataPayload(functionSignature, functionParameters) {
 
-  if (typeof functionSignature != "string") {
-    throw new Error("Bad function signature: " + functionSignature);
+  if (typeof functionSignature != 'string') {
+    throw new Error('Bad function signature: ' + functionSignature)
   }
 
-  if (typeof functionParameters != "string") {
-    throw new Error("Bad function parameter: " + functionSignature);
+  if (typeof functionParameters != 'string') {
+    throw new Error('Bad function parameter: ' + functionSignature)
   }
 
   // Construct function call data payload using ethereumjs-abi
   // https://github.com/ethereumjs/ethereumjs-abi
-  const params = functionParameters.split(",").filter((x) => x.trim());
-  const signatureArgs = [functionSignature].concat(params);
-  return "0x" + simpleEncode.apply(this, signatureArgs).toString("hex");
+  const params = functionParameters.split(',').filter((x) => x.trim())
+  const signatureArgs = [functionSignature].concat(params)
+  return '0x' + simpleEncode.apply(this, signatureArgs).toString('hex')
 }
 
 /**
@@ -70,30 +70,30 @@ export function encodeDataPayload(functionSignature, functionParameters) {
  */
 export function buildTx({contractAddress, privateKey, nonce, functionSignature, functionParameters, value, gasLimit, gasPrice}) {
 
-  let wallet = new Wallet(privateKey);
+  let wallet = new Wallet(privateKey)
 
   if (!gasLimit) {
-    gasLimit = "0x300000";
+    gasLimit = '0x300000'
   }
 
   if (!value) {
-    value = "0x0";
+    value = '0x0'
   }
 
   if (!gasPrice) {
     // Ropsten testnet 2017-01
-    gasPrice = "0x4a817c800"; // 20000000000
+    gasPrice = '0x4a817c800' // 20000000000
   }
 
   if (nonce === undefined) {
-    throw new Error("Cannot send a transaction without a nonce.")
+    throw new Error('Cannot send a transaction without a nonce.')
   }
 
-  let data;
+  let data
   if (functionSignature && functionParameters) {
-    data = encodeDataPayload(functionSignature, functionParameters);
+    data = encodeDataPayload(functionSignature, functionParameters)
   } else {
-    data = undefined;
+    data = undefined
   }
 
   const txData = {
@@ -103,8 +103,8 @@ export function buildTx({contractAddress, privateKey, nonce, functionSignature, 
     gasPrice: gasPrice,
     value: value,
     data: data,
-  };
+  }
 
   // Sign transactions
-  return wallet.sign(txData);
+  return wallet.sign(txData)
 }
