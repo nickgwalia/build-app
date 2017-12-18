@@ -8,6 +8,7 @@ import { TOKEN_ABI, TOKEN_ADDRESS, CROWDSALE_ADDRESS, isAddress,
   getEthUsd, fetchAddressBalance, grabTransactionsForAddress, grabTokenInfo } from '../misc/ethtools'
 import AccountsUIWrapper from './AccountsUIWrapper.jsx'
 import IntroExplainer from './IntroExplainer.jsx'
+import ApolloTest from './ApolloTest.jsx'
 import { Referrals } from '../api/referrals'
 import settings from '../../settings.json'
 
@@ -110,10 +111,10 @@ class App extends Component {
   }
 
   render() {
-    console.log('State: ', this.state)
-    console.log('Props: ', this.props)
-    console.log('Current user is:', this.props.currentUser)
-    console.log('Referred is:', this.props.referred)
+    // console.log('State: ', this.state)
+    // console.log('Props: ', this.props)
+    // console.log('Current user is:', this.props.currentUser)
+    // console.log('Referred is:', this.props.referred)
 
     // Must already be running inside an ETH browser such as Metamask.
     if (typeof web3 === 'undefined') {
@@ -135,7 +136,6 @@ class App extends Component {
         </div>
       )
     }
-
 
     const currentUser = this.props.currentUser,
       ethPrice = this.state && this.state.ethPrice || 0,
@@ -173,7 +173,7 @@ class App extends Component {
                 <AccountsUIWrapper/>
               </div>
             </div>
-
+            <ApolloTest />
             <div>
               {!currentUser ? <IntroExplainer/> : (
                 <div>
@@ -194,7 +194,6 @@ class App extends Component {
                         </form>
                       </div>
                   }
-
                 </div>
               )}
             </div>

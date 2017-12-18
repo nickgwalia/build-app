@@ -21,3 +21,41 @@ p {
   font-family: 'Open Sans', sans-serif;
   color: white;
 }
+
+.Loading {
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Loading-bounce {
+  width: 15px;
+  height: 15px;
+  background-image: linear-gradient(140deg, rgb(12,6,50) 20%, rgb(66,59,90) 60%, rgb(219,159,159) 100%);
+
+  border-radius: 100%;
+  display: inline-block;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  margin-right: 5px;
+}
+
+.Loading-bounce--1 {
+  animation-delay: -0.32s;
+}
+
+.Loading-bounce--2 {
+  animation-delay: -0.16s;
+}
+
+.Loading-bounce--3 {
+  margin-right: 0;
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% {
+    transform: scale(0);
+  } 40% {
+    transform: scale(1.0);
+  }
+}

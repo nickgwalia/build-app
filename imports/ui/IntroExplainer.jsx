@@ -13,9 +13,9 @@ export default class IntroExplainer extends Component {
           <img src="/icon_img5.png" width="100" height="100" style={{marginRight: '25px'}} />
         </div>
         <p>Build your local Arcade City network. Get paid in Ether and Arcade Tokens.</p>
-        <p>This requires the <a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en" target="_blank">MetaMask Chrome Plugin</a>.</p>
-        <p>To get your referral code, you first need to input someone else's. If you're here because someone referred you, use the code they gave you. If not, find a code in our community FB group <a href="https://www.facebook.com/groups/ArcadeCitySquare/" target="_blank">Arcade City Square</a>.</p>
-        <p>When someone uses your referral code, you'll instantly be sent 0.001 ETH, and you'll see their name in your list of referrals.</p>
+        <p>To access this app, you need the <a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en" target="_blank">MetaMask Chrome Plugin</a> and a referral code.</p>
+        <p>When logged in, you will receive your own referral code.</p>
+        <p>When someone uses your referral code, you'll instantly receive 0.001 ETH, and you'll see their name in your list of referrals.</p>
         <p>Any questions or issues please post in <a href="https://www.facebook.com/groups/ArcadeCitySquare/" target="_blank">Arcade City Square</a> or our <a href="https://arcadecitybuilders.slack.com" target="_blank">Slack channel</a>.</p>
         <div style={{marginTop: '35px'}}>
           <center><a href="https://metamask.io/" target="_blank"><img src="download-metamask.png" width="400"/></a></center>
