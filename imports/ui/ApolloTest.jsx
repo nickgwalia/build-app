@@ -7,8 +7,9 @@ import { Accounts } from 'meteor/accounts-base'
 // import Loading from './Loading'
 import LoginForm from './LoginForm'
 
-const ApolloTest = ({ currentUser, refetch, userLoading }) => {
+const ApolloTest = ({ currentUser, refetch, userLoading, userCount }) => {
   // console.log("currentUser", currentUser)
+  console.log('userCount: ', userCount)
   return (
     <div className="ApolloTest">
 
@@ -53,25 +54,34 @@ const GET_USER_DATA = gql`
     }
   }
 `
+const GET_ALL_USERS = gql`
+  query getAllUsers {
+    allUsers {
+      id
+      name
+      username
+      email
+    }
+  }
+`
 
 /*
  * We use the `graphql` higher order component to send the graphql query to our server
  * See for more information: http://dev.apollodata.com/react/
  */
-const withData = graphql(GET_USER_DATA, {
+const withData = graphql(GET_ALL_USERS, {
   // destructure the default props to more explicit ones
-  props: ({ data: { error, loading, user, refetch } }) => {
-    // console.log('WATS HAPPENING HERE')
-    // console.log("error:", error)
-    // console.log("loading:", loading)
-    // console.log("user:", user)
-    // console.log("refetch:", refetch)
-    if (loading) return { userLoading: true }
+  props: ({ data: { error, loading, allUsers, refetch } }) => {
+    if (loading) return { userLoading: true, userCount: 0 }
     if (error) return { hasErrors: true }
+
+    const user = allUsers[0]
+    console.log("user:", user)
 
     return {
       currentUser: user,
-      refetch,
+      userCount: allUsers.length,
+      refetch
     }
   },
 })

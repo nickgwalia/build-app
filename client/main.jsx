@@ -8,14 +8,16 @@ import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import gql from 'graphql-tag'
 
+import settings from '/settings.json'
+
 import App from '../imports/ui/App.jsx'
 
 const client = new ApolloClient({
-  link: new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cj7d9utpn0xk90108wgqj1ym9' }),
+  link: new HttpLink({ uri: settings.graphqlUrl }),
   cache: new InMemoryCache(),
 })
 
-client.query({ query: gql`{ Message(id: "cj8j2w9o45c1x0100w43djd80" ) { createdAt, text } }` }).then(console.log);
+// client.query({ query: gql`{ allUsers { id, name, username, email } }` }).then(console.log);
 
 Meteor.startup(() => {
   render(
